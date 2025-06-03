@@ -12,7 +12,7 @@ public class ShortUrlMapper {
     }
 
     public static ShortUrlResponseDto shortUrlEntityToResponse(ShortUrlEntity shortUrlEntity) {
-        return new ShortUrlResponseDto(shortUrlEntity.getId(), shortUrlEntity.getOriginalUrl());
+        return new ShortUrlResponseDto(shortUrlEntity.getOriginalUrl(), shortUrlEntity.getOriginalUrl());
     }
 
 }

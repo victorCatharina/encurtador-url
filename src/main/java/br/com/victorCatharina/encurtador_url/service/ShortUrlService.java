@@ -68,6 +68,10 @@ public class ShortUrlService {
         return sb.toString();
     }
 
+    public ShortUrlResponseDto findByID(String id) {
+        return ShortUrlMapper.shortUrlEntityToResponse(shortUrlRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("URL não encontrada")));
+    }
 
     public Page<ShortUrlResponseDto> listAll(Pageable pageable) {
         return shortUrlRepository.findAll(pageable)
