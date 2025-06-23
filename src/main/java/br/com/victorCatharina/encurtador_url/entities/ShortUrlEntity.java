@@ -23,4 +23,6 @@ public class ShortUrlEntity {
     private Instant createdAt;
     @Field(name = "expiration_date")
     private LocalDateTime expirationDate;
+    @Field(name = "click_count")
+    private long countClicks;
 }

@@ -5,30 +5,26 @@ import br.com.victorCatharina.encurtador_url.dto.response.ShortUrlResponseDto;
 import br.com.victorCatharina.encurtador_url.entities.ShortUrlEntity;
 import br.com.victorCatharina.encurtador_url.repository.ShortUrlRepository;
 import br.com.victorCatharina.encurtador_url.service.mapper.ShortUrlMapper;
-import org.springframework.beans.factory.annotation.Value;
+import br.com.victorCatharina.encurtador_url.util.RandomId;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
-import java.util.concurrent.ThreadLocalRandom;
 
 @Service
 public class ShortUrlService {
 
-    private static final String CHARACTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-    private static final int ID_LENGTH = 8; // Length of the short ID
-
-    @Value("app.base-url")
-    private String baseUrl;
-
     private final ShortUrlRepository shortUrlRepository;
+    private final ShortUrlMapper shortUrlMapper;
 
-    public ShortUrlService(ShortUrlRepository shortUrlRepository) {
+    public ShortUrlService(ShortUrlRepository shortUrlRepository,
+                           ShortUrlMapper shortUrlMapper) {
         this.shortUrlRepository = shortUrlRepository;
+        this.shortUrlMapper = shortUrlMapper;
     }
 
-    public ShortUrlResponseDto shortUrl(ShortUrlRequestDto requestDto) {
+    public ShortUrlResponseDto saveShortUrl(ShortUrlRequestDto requestDto) {
 
         ShortUrlEntity shortUrl = new ShortUrlEntity();
 
@@ -43,38 +39,26 @@ public class ShortUrlService {
 
         shortUrlRepository.insert(shortUrl);
 
-        return new ShortUrlResponseDto(shortUrl.getOriginalUrl(), baseUrl + generatedId);
+        return findByID(generatedId);
     }
 
     private String generateUniqueShortId() {
         String shortId;
 
         do {
-            shortId = generateRandomId();
+            shortId = RandomId.generateRandomId();
         } while (shortUrlRepository.existsById(shortId)); // Checks MongoDB for ID collision
 
         return shortId;
     }
 
-    private String generateRandomId() {
-        StringBuilder sb = new StringBuilder(ID_LENGTH);
-        ThreadLocalRandom random = ThreadLocalRandom.current();
-
-        for (int i = 0; i < ID_LENGTH; i++) {
-            int index = random.nextInt(CHARACTERS.length());
-            sb.append(CHARACTERS.charAt(index));
-        }
-
-        return sb.toString();
-    }
-
     public ShortUrlResponseDto findByID(String id) {
-        return ShortUrlMapper.shortUrlEntityToResponse(shortUrlRepository.findById(id)
+        return shortUrlMapper.shortUrlEntityToResponse(shortUrlRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("URL não encontrada")));
     }
 
     public Page<ShortUrlResponseDto> listAll(Pageable pageable) {
         return shortUrlRepository.findAll(pageable)
-                .map(ShortUrlMapper::shortUrlEntityToResponse);
+                .map(shortUrlMapper::shortUrlEntityToResponse);
     }
 }
