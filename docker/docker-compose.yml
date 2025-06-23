@@ -1,0 +1,48 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: ..
+    container_name: app
+    depends_on:
+      - mongo
+    environment:
+      - MONGODB_HOST=mongo
+      - MONGODB_PORT=27017
+      - MONGODB_DATABASE=encurtador_url
+      - BASE_URL=localhost/encurtador/
+    ports:
+      - "8080:8080"
+    networks:
+      - dev_net
+
+  mongo:
+    image: mongo:7
+    container_name: mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    networks:
+      - dev_net
+
+
+  nginx:
+    image: nginx:latest
+    container_name: nginx
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - app
+    networks:
+      - dev_net
+
+networks:
+  dev_net:
+    driver: bridge
+
+volumes:
+  mongo_data:
